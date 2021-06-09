@@ -6,19 +6,31 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path"
+	"runtime"
 	"strings"
 )
 
-var gitUserName = "Mulavar"
+var gitUserName = "Dong Jianhui"
 
 func main() {
 	//"/Users/lam/go/src/github.com/apache/dubbo-go"
-	// TODO args
-	err := scan("/Users/lam/IdeaProjects")
+	err := scan(getCwd())
 	if err != nil {
 		fmt.Println("cuowu,", err)
 		return
 	}
+}
+
+func getCwd() string {
+	_, filename, _, ok := runtime.Caller(1)
+	var cwdPath string
+	if ok {
+		cwdPath = path.Join(path.Dir(filename), "") // the the main function file directory
+	} else {
+		cwdPath = "./"
+	}
+	return cwdPath
 }
 
 func execScript(workDir, gitUserName string) {
@@ -29,7 +41,8 @@ func execScript(workDir, gitUserName string) {
 		log.Fatal(err)
 	}
 
-	commandLine := fmt.Sprintf("git log --author=%s --pretty=tformat: --numstat ", gitUserName)
+	// logFile: ${workspace}/.git/logs/refs/heads
+	commandLine := fmt.Sprintf("git log --author='%s' --pretty=tformat: --numstat ", gitUserName)
 	cmd := exec.Command("/bin/sh", "-c", commandLine)
 	if gitLog, err = cmd.Output(); err != nil {
 		fmt.Println(err)
@@ -59,6 +72,7 @@ func execScript(workDir, gitUserName string) {
 }
 
 func scan(path string) error {
+	fmt.Println(path)
 	fileInfos, err := ioutil.ReadDir(path)
 	if err != nil {
 		return nil
